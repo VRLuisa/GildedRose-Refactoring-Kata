@@ -40,7 +40,7 @@ export class GildedRose {
         this.updateNormalItem(this.items[i]);
       }
 
-      if (this.items[i].name != SULFURAS) {
+      if (!this.isSulfuras(this.items[i])) {
         this.items[i].sellIn = this.items[i].sellIn - 1;
       }
 
@@ -65,7 +65,7 @@ export class GildedRose {
 
   private updateNormalItem(item: Item): void {
     if (item.quality > 0) {
-      if (item.name != SULFURAS) {
+      if (!this.isSulfuras(item)) {
         item.quality = item.quality - 1;
       }
     }
@@ -107,5 +107,9 @@ export class GildedRose {
     if (item.sellIn < 0) {
       item.quality = item.quality - item.quality;
     }
+  }
+
+  private isSulfuras(item: Item): boolean {
+    return item.name == SULFURAS;
   }
 }
