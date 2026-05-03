@@ -14,87 +14,94 @@ const AGED_BRIE = 'Aged Brie';
 const SULFURAS = 'Sulfuras, Hand of Ragnaros';
 const BACKSTAGE_PASSES = 'Backstage passes to a TAFKAL80ETC concert';
 
-class GildedRoseUpdater {
-  update(item: Item): void {
-    if (this.isSulfuras(item)) {
+type ItemUpdaterConstructor = new (item: Item) => ItemUpdater;
+
+abstract class ItemUpdater {
+  protected item: Item;
+
+  constructor(item: Item) {
+    this.item = item;
+  }
+
+  abstract update(): void;
+
+  protected decreaseSellIn(): void {
+    this.item.sellIn = this.item.sellIn - 1;
+  }
+
+  protected increaseQuality(amount: number): void {
+    if (this.item.quality < 50) {
+      this.item.quality = Math.min(50, this.item.quality + amount);
+    }
+  }
+
+  protected decreaseQuality(amount: number): void {
+    if (this.item.quality > 0) {
+      this.item.quality = Math.max(0, this.item.quality - amount);
+    }
+  }
+}
+
+class NormalItemUpdater extends ItemUpdater {
+  update(): void {
+    this.decreaseSellIn();
+
+    const degradation = this.item.sellIn < 0 ? 2 : 1;
+
+    this.decreaseQuality(degradation);
+  }
+}
+
+class AgedBrieUpdater extends ItemUpdater {
+  update(): void {
+    this.decreaseSellIn();
+
+    const improvement = this.item.sellIn < 0 ? 2 : 1;
+
+    this.increaseQuality(improvement);
+  }
+}
+
+class SulfurasUpdater extends ItemUpdater {
+  update(): void {
+    // Sulfuras nunca cambia.
+  }
+}
+
+class BackstagePassUpdater extends ItemUpdater {
+  update(): void {
+    this.decreaseSellIn();
+
+    if (this.item.sellIn < 0) {
+      this.item.quality = 0;
       return;
     }
 
-    if (this.isAgedBrie(item)) {
-      this.updateAgedBrieItem(item);
+    if (this.item.sellIn < 5) {
+      this.increaseQuality(3);
       return;
     }
 
-    if (this.isBackstagePass(item)) {
-      this.updateBackstagePassItem(item);
+    if (this.item.sellIn < 10) {
+      this.increaseQuality(2);
       return;
     }
 
-    this.updateNormalItem(item);
+    this.increaseQuality(1);
   }
+}
 
-  private updateNormalItem(item: Item): void {
-    this.decreaseQuality(item);
-    this.decreaseSellIn(item);
+class UpdaterFactory {
+  private static readonly registry: { [key: string]: ItemUpdaterConstructor } = {
+    [AGED_BRIE]: AgedBrieUpdater,
+    [SULFURAS]: SulfurasUpdater,
+    [BACKSTAGE_PASSES]: BackstagePassUpdater,
+  };
 
-    if (item.sellIn < 0) {
-      this.decreaseQuality(item);
-    }
-  }
+  static forItem(item: Item): ItemUpdater {
+    const Updater = UpdaterFactory.registry[item.name] || NormalItemUpdater;
 
-  private updateAgedBrieItem(item: Item): void {
-    this.increaseQuality(item);
-    this.decreaseSellIn(item);
-
-    if (item.sellIn < 0) {
-      this.increaseQuality(item);
-    }
-  }
-
-  private updateBackstagePassItem(item: Item): void {
-    this.increaseQuality(item);
-
-    if (item.sellIn < 11) {
-      this.increaseQuality(item);
-    }
-
-    if (item.sellIn < 6) {
-      this.increaseQuality(item);
-    }
-
-    this.decreaseSellIn(item);
-
-    if (item.sellIn < 0) {
-      item.quality = 0;
-    }
-  }
-
-  private increaseQuality(item: Item): void {
-    if (item.quality < 50) {
-      item.quality = item.quality + 1;
-    }
-  }
-
-  private decreaseQuality(item: Item): void {
-    if (item.quality > 0) {
-      item.quality = item.quality - 1;
-    }
-  }
-
-  private decreaseSellIn(item: Item): void {
-    item.sellIn = item.sellIn - 1;
-  }
-
-  private isAgedBrie(item: Item): boolean {
-    return item.name == AGED_BRIE;
-  }
-
-  private isSulfuras(item: Item): boolean {
-    return item.name == SULFURAS;
-  }
-
-  private isBackstagePass(item: Item): boolean {
-    return item.name == BACKSTAGE_PASSES;
+    return new Updater(item);
   }
 }
 
@@ -106,10 +113,8 @@ export class GildedRose {
   }
 
   updateQuality() {
-    const updater = new GildedRoseUpdater();
-
     for (let i = 0; i < this.items.length; i++) {
-      updater.update(this.items[i]);
+      UpdaterFactory.forItem(this.items[i]).update();
     }
 
     return this.items;
