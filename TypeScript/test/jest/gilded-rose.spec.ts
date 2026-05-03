@@ -165,4 +165,38 @@ describe('Gilded Rose characterization tests', () => {
     expect(items[0].quality).toBe(0);
     expect(items[0].sellIn).toBe(-1);
   });
+
+  //módulo 3
+    it('conjured item degrades twice as fast before sell date', () => {
+    const gildedRose = new GildedRose([
+      new Item('Conjured Mana Cake', 5, 20),
+    ]);
+
+    const items = gildedRose.updateQuality();
+
+    expect(items[0].quality).toBe(18);
+    expect(items[0].sellIn).toBe(4);
+  });
+
+  it('conjured item degrades four times as fast after sell date', () => {
+    const gildedRose = new GildedRose([
+      new Item('Conjured Mana Cake', 0, 20),
+    ]);
+
+    const items = gildedRose.updateQuality();
+
+    expect(items[0].quality).toBe(16);
+    expect(items[0].sellIn).toBe(-1);
+  });
+
+  it('conjured item quality never goes below zero', () => {
+    const gildedRose = new GildedRose([
+      new Item('Conjured Mana Cake', 5, 1),
+    ]);
+
+    const items = gildedRose.updateQuality();
+
+    expect(items[0].quality).toBe(0);
+    expect(items[0].sellIn).toBe(4);
+  });
 });

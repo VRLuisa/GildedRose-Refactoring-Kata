@@ -13,6 +13,7 @@ export class Item {
 const AGED_BRIE = 'Aged Brie';
 const SULFURAS = 'Sulfuras, Hand of Ragnaros';
 const BACKSTAGE_PASSES = 'Backstage passes to a TAFKAL80ETC concert';
+const CONJURED_MANA_CAKE = 'Conjured Mana Cake';
 
 type ItemUpdaterConstructor = new (item: Item) => ItemUpdater;
 
@@ -91,11 +92,22 @@ class BackstagePassUpdater extends ItemUpdater {
   }
 }
 
+class ConjuredItemUpdater extends ItemUpdater {
+  update(): void {
+    this.decreaseSellIn();
+
+    const degradation = this.item.sellIn < 0 ? 4 : 2;
+
+    this.decreaseQuality(degradation);
+  }
+}
+
 class UpdaterFactory {
   private static readonly registry: { [key: string]: ItemUpdaterConstructor } = {
     [AGED_BRIE]: AgedBrieUpdater,
     [SULFURAS]: SulfurasUpdater,
     [BACKSTAGE_PASSES]: BackstagePassUpdater,
+    [CONJURED_MANA_CAKE]: ConjuredItemUpdater,
   };
 
   static forItem(item: Item): ItemUpdater {
