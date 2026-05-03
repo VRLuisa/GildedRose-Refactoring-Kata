@@ -28,29 +28,16 @@ export class GildedRose {
         continue;
       }
 
+      if (this.items[i].name == BACKSTAGE_PASSES) {
+        this.updateBackstagePassItem(this.items[i]);
+        continue;
+      }
+
       if (
         this.items[i].name != AGED_BRIE &&
         this.items[i].name != BACKSTAGE_PASSES
       ) {
         this.updateNormalItem(this.items[i]);
-      } else {
-        if (this.items[i].quality < 50) {
-          this.items[i].quality = this.items[i].quality + 1;
-
-          if (this.items[i].name == BACKSTAGE_PASSES) {
-            if (this.items[i].sellIn < 11) {
-              if (this.items[i].quality < 50) {
-                this.items[i].quality = this.items[i].quality + 1;
-              }
-            }
-
-            if (this.items[i].sellIn < 6) {
-              if (this.items[i].quality < 50) {
-                this.items[i].quality = this.items[i].quality + 1;
-              }
-            }
-          }
-        }
       }
 
       if (this.items[i].name != SULFURAS) {
@@ -95,6 +82,30 @@ export class GildedRose {
       if (item.quality < 50) {
         item.quality = item.quality + 1;
       }
+    }
+  }
+
+  private updateBackstagePassItem(item: Item): void {
+    if (item.quality < 50) {
+      item.quality = item.quality + 1;
+
+      if (item.sellIn < 11) {
+        if (item.quality < 50) {
+          item.quality = item.quality + 1;
+        }
+      }
+
+      if (item.sellIn < 6) {
+        if (item.quality < 50) {
+          item.quality = item.quality + 1;
+        }
+      }
+    }
+
+    item.sellIn = item.sellIn - 1;
+
+    if (item.sellIn < 0) {
+      item.quality = item.quality - item.quality;
     }
   }
 }
