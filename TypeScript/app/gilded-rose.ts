@@ -14,35 +14,23 @@ const AGED_BRIE = 'Aged Brie';
 const SULFURAS = 'Sulfuras, Hand of Ragnaros';
 const BACKSTAGE_PASSES = 'Backstage passes to a TAFKAL80ETC concert';
 
-export class GildedRose {
-  items: Array<Item>;
-
-  constructor(items = [] as Array<Item>) {
-    this.items = items;
-  }
-
-  updateQuality() {
-    for (let i = 0; i < this.items.length; i++) {
-      const item = this.items[i];
-
-      if (this.isSulfuras(item)) {
-        continue;
-      }
-
-      if (this.isAgedBrie(item)) {
-        this.updateAgedBrieItem(item);
-        continue;
-      }
-
-      if (this.isBackstagePass(item)) {
-        this.updateBackstagePassItem(item);
-        continue;
-      }
-
-      this.updateNormalItem(item);
+class GildedRoseUpdater {
+  update(item: Item): void {
+    if (this.isSulfuras(item)) {
+      return;
     }
 
-    return this.items;
+    if (this.isAgedBrie(item)) {
+      this.updateAgedBrieItem(item);
+      return;
+    }
+
+    if (this.isBackstagePass(item)) {
+      this.updateBackstagePassItem(item);
+      return;
+    }
+
+    this.updateNormalItem(item);
   }
 
   private updateNormalItem(item: Item): void {
@@ -107,5 +95,23 @@ export class GildedRose {
 
   private isBackstagePass(item: Item): boolean {
     return item.name == BACKSTAGE_PASSES;
+  }
+}
+
+export class GildedRose {
+  items: Array<Item>;
+
+  constructor(items = [] as Array<Item>) {
+    this.items = items;
+  }
+
+  updateQuality() {
+    const updater = new GildedRoseUpdater();
+
+    for (let i = 0; i < this.items.length; i++) {
+      updater.update(this.items[i]);
+    }
+
+    return this.items;
   }
 }
