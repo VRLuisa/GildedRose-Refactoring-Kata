@@ -23,93 +23,89 @@ export class GildedRose {
 
   updateQuality() {
     for (let i = 0; i < this.items.length; i++) {
-      if (this.items[i].name == AGED_BRIE) {
-        this.updateAgedBrieItem(this.items[i]);
+      const item = this.items[i];
+
+      if (this.isSulfuras(item)) {
         continue;
       }
 
-      if (this.items[i].name == BACKSTAGE_PASSES) {
-        this.updateBackstagePassItem(this.items[i]);
+      if (this.isAgedBrie(item)) {
+        this.updateAgedBrieItem(item);
         continue;
       }
 
-      if (
-        this.items[i].name != AGED_BRIE &&
-        this.items[i].name != BACKSTAGE_PASSES
-      ) {
-        this.updateNormalItem(this.items[i]);
+      if (this.isBackstagePass(item)) {
+        this.updateBackstagePassItem(item);
+        continue;
       }
 
-      if (!this.isSulfuras(this.items[i])) {
-        this.items[i].sellIn = this.items[i].sellIn - 1;
-      }
-
-      if (this.items[i].sellIn < 0) {
-        if (this.items[i].name != AGED_BRIE) {
-          if (this.items[i].name != BACKSTAGE_PASSES) {
-            this.updateNormalItem(this.items[i]);
-          } else {
-            this.items[i].quality =
-              this.items[i].quality - this.items[i].quality;
-          }
-        } else {
-          if (this.items[i].quality < 50) {
-            this.items[i].quality = this.items[i].quality + 1;
-          }
-        }
-      }
+      this.updateNormalItem(item);
     }
 
     return this.items;
   }
 
   private updateNormalItem(item: Item): void {
-    if (item.quality > 0) {
-      if (!this.isSulfuras(item)) {
-        item.quality = item.quality - 1;
-      }
+    this.decreaseQuality(item);
+    this.decreaseSellIn(item);
+
+    if (item.sellIn < 0) {
+      this.decreaseQuality(item);
     }
   }
 
   private updateAgedBrieItem(item: Item): void {
-    if (item.quality < 50) {
-      item.quality = item.quality + 1;
-    }
-
-    item.sellIn = item.sellIn - 1;
+    this.increaseQuality(item);
+    this.decreaseSellIn(item);
 
     if (item.sellIn < 0) {
-      if (item.quality < 50) {
-        item.quality = item.quality + 1;
-      }
+      this.increaseQuality(item);
     }
   }
 
   private updateBackstagePassItem(item: Item): void {
-    if (item.quality < 50) {
-      item.quality = item.quality + 1;
+    this.increaseQuality(item);
 
-      if (item.sellIn < 11) {
-        if (item.quality < 50) {
-          item.quality = item.quality + 1;
-        }
-      }
-
-      if (item.sellIn < 6) {
-        if (item.quality < 50) {
-          item.quality = item.quality + 1;
-        }
-      }
+    if (item.sellIn < 11) {
+      this.increaseQuality(item);
     }
 
-    item.sellIn = item.sellIn - 1;
+    if (item.sellIn < 6) {
+      this.increaseQuality(item);
+    }
+
+    this.decreaseSellIn(item);
 
     if (item.sellIn < 0) {
-      item.quality = item.quality - item.quality;
+      item.quality = 0;
     }
+  }
+
+  private increaseQuality(item: Item): void {
+    if (item.quality < 50) {
+      item.quality = item.quality + 1;
+    }
+  }
+
+  private decreaseQuality(item: Item): void {
+    if (item.quality > 0) {
+      item.quality = item.quality - 1;
+    }
+  }
+
+  private decreaseSellIn(item: Item): void {
+    item.sellIn = item.sellIn - 1;
+  }
+
+  private isAgedBrie(item: Item): boolean {
+    return item.name == AGED_BRIE;
   }
 
   private isSulfuras(item: Item): boolean {
     return item.name == SULFURAS;
+  }
+
+  private isBackstagePass(item: Item): boolean {
+    return item.name == BACKSTAGE_PASSES;
   }
 }
