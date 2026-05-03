@@ -27,20 +27,18 @@ export class GildedRose {
         this.items[i].name != AGED_BRIE &&
         this.items[i].name != BACKSTAGE_PASSES
       ) {
-        if (this.items[i].quality > 0) {
-          if (this.items[i].name != SULFURAS) {
-            this.items[i].quality = this.items[i].quality - 1;
-          }
-        }
+        this.updateNormalItem(this.items[i]);
       } else {
         if (this.items[i].quality < 50) {
           this.items[i].quality = this.items[i].quality + 1;
+
           if (this.items[i].name == BACKSTAGE_PASSES) {
             if (this.items[i].sellIn < 11) {
               if (this.items[i].quality < 50) {
                 this.items[i].quality = this.items[i].quality + 1;
               }
             }
+
             if (this.items[i].sellIn < 6) {
               if (this.items[i].quality < 50) {
                 this.items[i].quality = this.items[i].quality + 1;
@@ -57,13 +55,10 @@ export class GildedRose {
       if (this.items[i].sellIn < 0) {
         if (this.items[i].name != AGED_BRIE) {
           if (this.items[i].name != BACKSTAGE_PASSES) {
-            if (this.items[i].quality > 0) {
-              if (this.items[i].name != SULFURAS) {
-                this.items[i].quality = this.items[i].quality - 1;
-              }
-            }
+            this.updateNormalItem(this.items[i]);
           } else {
-            this.items[i].quality = this.items[i].quality - this.items[i].quality;
+            this.items[i].quality =
+              this.items[i].quality - this.items[i].quality;
           }
         } else {
           if (this.items[i].quality < 50) {
@@ -74,5 +69,13 @@ export class GildedRose {
     }
 
     return this.items;
+  }
+
+  private updateNormalItem(item: Item): void {
+    if (item.quality > 0) {
+      if (item.name != SULFURAS) {
+        item.quality = item.quality - 1;
+      }
+    }
   }
 }
