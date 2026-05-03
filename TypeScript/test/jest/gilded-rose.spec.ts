@@ -31,6 +31,16 @@ describe('Gilded Rose characterization tests', () => {
     expect(items[0].sellIn).toBe(4);
   });
 
+  // NUEVO TEST:
+  // Verifica que un ítem normal vencido tampoco baje su quality por debajo de 0.
+  it('normal item quality does not go below zero after sell date', () => {
+    const gildedRose = new GildedRose([new Item('Normal Item', 0, 1)]);
+    const items = gildedRose.updateQuality();
+
+    expect(items[0].quality).toBe(0);
+    expect(items[0].sellIn).toBe(-1);
+  });
+
   // Verifica que Aged Brie aumente su quality con el tiempo
   // en lugar de disminuir como un ítem normal.
   it('aged brie increases quality over time', () => {
@@ -61,14 +71,38 @@ describe('Gilded Rose characterization tests', () => {
     expect(items[0].sellIn).toBe(4);
   });
 
+  // NUEVO TEST:
+  // Verifica que Aged Brie vencido no sobrepase el límite máximo de quality.
+  it('aged brie does not exceed quality 50 after sell date', () => {
+    const gildedRose = new GildedRose([new Item('Aged Brie', 0, 49)]);
+    const items = gildedRose.updateQuality();
+
+    expect(items[0].quality).toBe(50);
+    expect(items[0].sellIn).toBe(-1);
+  });
+
   // Verifica que Sulfuras no cambie ni en quality ni en sellIn,
   // ya que es un ítem legendario.
   it('sulfuras never changes', () => {
-    const gildedRose = new GildedRose([new Item('Sulfuras, Hand of Ragnaros', 0, 80)]);
+    const gildedRose = new GildedRose([
+      new Item('Sulfuras, Hand of Ragnaros', 0, 80),
+    ]);
     const items = gildedRose.updateQuality();
 
     expect(items[0].quality).toBe(80);
     expect(items[0].sellIn).toBe(0);
+  });
+
+  // NUEVO TEST:
+  // Verifica que Sulfuras tampoco cambie aunque tenga días disponibles antes de vencer.
+  it('sulfuras remains unchanged even before sell date', () => {
+    const gildedRose = new GildedRose([
+      new Item('Sulfuras, Hand of Ragnaros', 5, 80),
+    ]);
+    const items = gildedRose.updateQuality();
+
+    expect(items[0].quality).toBe(80);
+    expect(items[0].sellIn).toBe(5);
   });
 
   // Verifica que las entradas de backstage aumenten su quality en 1
@@ -104,6 +138,19 @@ describe('Gilded Rose characterization tests', () => {
     const items = gildedRose.updateQuality();
 
     expect(items[0].quality).toBe(23);
+    expect(items[0].sellIn).toBe(4);
+  });
+
+  // NUEVO TEST:
+  // Verifica que las entradas de backstage no sobrepasen quality 50
+  // aunque deban aumentar en 3.
+  it('backstage passes quality does not exceed 50 near concert date', () => {
+    const gildedRose = new GildedRose([
+      new Item('Backstage passes to a TAFKAL80ETC concert', 5, 48),
+    ]);
+    const items = gildedRose.updateQuality();
+
+    expect(items[0].quality).toBe(50);
     expect(items[0].sellIn).toBe(4);
   });
 
